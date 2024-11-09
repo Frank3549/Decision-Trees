@@ -136,8 +136,6 @@ def learn_decision_tree(
     Returns:
         DecisionNode: Learned decision tree node
     """
-    # TODO: Implement recursive tree construction based on pseudo code in class
-    # and the assignment
     
     # Case 1: examples are empty
     if X.empty:
@@ -156,7 +154,21 @@ def learn_decision_tree(
     tree = DecisionBranch(best_attribute)
     
     for value in X[best_attribute].unique():
-        subset_X = X[X[best_attribute] == value]
+        X_value_subset = X[X[best_attribute] == value]
+        y_subset = y[X_value_subset.index] 
+        attribute_subset = attributes.copy().remove(best_attribute)
+        subtree = learn_decision_tree(
+                            X_value_subset.drop(columns=[best_attribute]),
+                            y_subset,
+                            attribute_subset,
+                            y
+                            )
+        tree.branches[value] = subtree
+
+    return tree
+
+
+               
 
 
 
