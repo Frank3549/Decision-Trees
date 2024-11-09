@@ -101,7 +101,7 @@ def information_gain(X: pd.DataFrame, y: pd.Series, attribute: str) -> float:
         total_instances = len(y_labels)
 
         attribute_value_entropy = B(positive_instances / total_instances)
-        remainder += (len(y_labels) / total_instances) * attribute_value_entropy
+        remainder += (total_instances / len(y) ) * attribute_value_entropy
 
 
     return entropy - remainder
@@ -153,6 +153,10 @@ def learn_decision_tree(
 
     # Case 4: recursive tree construction
     best_attribute = max(attributes, key=lambda attribute: information_gain(X, y, attribute))
+    tree = DecisionBranch(best_attribute)
+    
+    for value in X[best_attribute].unique():
+        subset_X = X[X[best_attribute] == value]
 
 
 
