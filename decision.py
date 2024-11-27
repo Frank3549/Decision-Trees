@@ -155,20 +155,17 @@ def learn_decision_tree(
     # Case 4: recursive decision tree construction
     best_attribute = max(attributes, key=lambda attribute: information_gain(X, y, attribute))
     tree = DecisionBranch(best_attribute, {})
-    
-    for attribute_value, X_value_subset in X.groupby(best_attribute, observed=False):
-        y_subset = y.loc[X_value_subset.index] 
 
-        # Since we're also using observed=False, we need to check if the subset is empty
-        if X_value_subset.empty:
-                    subtree = plurality_value(y_parent)
-        else:
-            subtree = learn_decision_tree(
-                X_value_subset.drop(columns=[best_attribute]),
-                y_subset,
-                [attribute for attribute in attributes if attribute != best_attribute],
-                y
-            )
+    for attribute_value, X_value_subset in X.groupby(best_attribute, observed=False):
+        subset_examples = X[X[best_attribute] == attribute_value]
+        y_subset = y.loc[subset_examples.index]
+
+        subtree = learn_decision_tree(
+            X_value_subset,
+            y_subset,
+            [attribute for attribute in attributes if attribute != best_attribute],
+            y
+        )
         tree.branches[attribute_value] = subtree
 
     return tree
