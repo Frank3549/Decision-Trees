@@ -49,6 +49,9 @@ class DecisionBranch:
         
         """
         # TODO: Implement prediction based on value of self.attr in x
+        value = x[self.attr]
+        return self.branches[value].predict(x)
+
 
     def display(self, indent=0):
         """Pretty print tree starting at optional indent"""
@@ -137,11 +140,11 @@ def learn_decision_tree(
         DecisionNode: Learned decision tree node
     """
     
-    # Case 1: examples are empty
+    # Case 1: examples is empty
     if X.empty:
         return plurality_value(y_parent)
 
-    # Case 2: all examples have the same label
+    # Case 2: all target values are the same
     elif len(y.unique()) == 1:
         return DecisionLeaf(y.iloc[0])
 
@@ -149,40 +152,37 @@ def learn_decision_tree(
     elif len(attributes) == 0:
         return plurality_value(y)
 
-    # Case 4: recursive tree construction
+    # Case 4: recursive decision tree construction
     best_attribute = max(attributes, key=lambda attribute: information_gain(X, y, attribute))
-    tree = DecisionBranch(best_attribute)
+    tree = DecisionBranch(best_attribute, {})
     
-    for value in X[best_attribute].unique():
-        X_value_subset = X[X[best_attribute] == value]
-        y_subset = y[X_value_subset.index] 
-        attribute_subset = attributes.copy().remove(best_attribute)
-        subtree = learn_decision_tree(
-                            X_value_subset.drop(columns=[best_attribute]),
-                            y_subset,
-                            attribute_subset,
-                            y
-                            )
-        tree.branches[value] = subtree
+    for attribute_value, X_value_subset in X.groupby(best_attribute, observed=False):
+        y_subset = y.loc[X_value_subset.index] 
+
+        # Since we're also using observed=False, we need to check if the subset is empty
+        if X_value_subset.empty:
+                    subtree = plurality_value(y_parent)
+        else:
+            subtree = learn_decision_tree(
+                X_value_subset.drop(columns=[best_attribute]),
+                y_subset,
+                [attribute for attribute in attributes if attribute != best_attribute],
+                y
+            )
+        tree.branches[attribute_value] = subtree
 
     return tree
 
 
                
 
-
-
 def plurality_value(y: pd.Series) -> DecisionLeaf:
     """
     Return a leaf node containing the most common value in y
-    
     """
-    positive_instances = sum(y)
-    negative_instances = len(y) - positive_instances
-    if positive_instances >= negative_instances:
-        return DecisionLeaf(1)
-    else:
-        return DecisionLeaf(0)
+    mode_value = y.mode()  # Get the mode of the series
+    # Select the first mode for consistency, even if there are multiple modes
+    return DecisionLeaf(mode_value.iloc[0])
 
     
 
