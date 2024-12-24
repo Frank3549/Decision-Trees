@@ -2,7 +2,7 @@
 
 Training and testing of Decisions Trees. The README describes how to run the code.
 
-## Running the skeleton program
+## Running the program
 
 Executing `decision.py` will train and test your program on a small dataset by default.  You can change the dataset and the evaluation approach for the adult dataset by changing the optional arguments shown below.
 
